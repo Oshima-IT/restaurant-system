@@ -79,55 +79,6 @@ restaurant-system/
 │
 └── tests/ # テストコード
 
-## ⚙️ 環境構築
-
-### 1. リポジトリを取得
-
-```bash
-git clone https://github.com/Oshima-IT/restaurant-system.git
-
-cd restaurant-system
-2. 仮想環境作成
-python3 -m venv venv
-3. 仮想環境を有効化
-
-Ubuntu / WSL:
-
-source venv/bin/activate
-
-Windows:
-
-venv\Scripts\activate
-4. ライブラリインストール
-pip install -r requirements.txt
-5. データベース設定
-
-MySQLを起動し、設定ファイルを環境に合わせて変更してください。
-
-config.py
-6. テーブル作成
-python create_tables.py
-
-管理者作成：
-
-python create_admin.py
-7. 起動
-python app.py
-
-アクセス:
-
-http://localhost:5000
-🔒 注意事項
-
-以下のファイルはGit管理対象外です。
-
-venv/
-.env
-アップロード画像
-データベースファイル
-SSL証明書
-
-環境構築後に各自で設定してください。
 
 🚀 今後の改善予定
 OCR精度向上
