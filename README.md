@@ -141,11 +141,3 @@ This project is for educational and development purposes.
 
 
 ---
-
-追加するとGitHub上で見栄えが良くなるもの：
-
-- トップにシステム画面のスクリーンショット
-- 使用例（POS画面 → OCR登録 → 売上表示）
-- 開発目的（「小規模飲食店のDX化」など）
-
-特に今回のシステムは研究・実習成果として見せられる内容なので、READMEを少し整えるだけでポートフォリオ感がかなり出ます。
