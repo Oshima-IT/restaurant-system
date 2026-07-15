@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card" style="max-width:700px;">
+    <div class="card-body">
+        <h3>勤怠修正</h3>
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">日付</label>
+                <input class="form-control" value="{{ attendance_record.work_date }}" disabled>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">社員</label>
+                {% if users_by_id and attendance_record.user_id in users_by_id %}
+                <input class="form-control" value="{{ users_by_id[attendance_record.user_id].name }}" disabled>
+                {% else %}
+                <input class="form-control" value="{{ attendance_record.user_id }}" disabled>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">出勤時刻</label>
+                <input type="datetime-local" class="form-control" name="clock_in" value="{{ attendance_record.clock_in.strftime('%Y-%m-%dT%H:%M') if attendance_record.clock_in else '' }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">退勤時刻</label>
+                <input type="datetime-local" class="form-control" name="clock_out" value="{{ attendance_record.clock_out.strftime('%Y-%m-%dT%H:%M') if attendance_record.clock_out else '' }}">
+            </div>
+            <button class="btn btn-primary">保存</button>
+            <a href="/attendance" class="btn btn-secondary">戻る</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

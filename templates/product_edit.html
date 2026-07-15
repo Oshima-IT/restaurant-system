@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>商品編集</h2>
+
+<hr>
+
+<form method="POST">
+
+    <div class="mb-3">
+        <label class="form-label">商品名</label>
+        <input
+            type="text"
+            name="name"
+            class="form-control"
+            value="{{ product.name }}"
+            required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">カテゴリ</label>
+        <input
+            type="text"
+            name="category"
+            class="form-control"
+            value="{{ product.category }}"
+            required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">価格</label>
+        <input
+            type="number"
+            name="price"
+            class="form-control"
+            value="{{ product.price }}"
+            required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">在庫</label>
+        <input
+            type="number"
+            name="stock"
+            class="form-control"
+            value="{{ product.stock }}"
+            required>
+    </div>
+
+    <button class="btn btn-primary">
+        保存
+    </button>
+
+    <a href="/products" class="btn btn-secondary">
+        戻る
+    </a>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>売上分析</h2>
+<hr>
+
+<!-- 比較カード -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white shadow border-0 mb-3">
+            <div class="card-body text-center">
+                <h6 class="text-uppercase small font-weight-bold">今月の売上累計</h6>
+                <h2 class="mb-0">¥{{ "{:,}".format(total_sales) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow border-0 mb-3" style="border-left: 5px solid {% if growth_rate >= 0 %}#28a745{% else %}#dc3545{% endif %} !important;">
+            <div class="card-body text-center">
+                <h6 class="text-uppercase small font-weight-bold text-muted">前月比</h6>
+                <h3 class="mb-0 {% if growth_rate >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    {{ growth_rate }}% 
+                    <small style="font-size: 0.9rem;">
+                        ({% if diff >= 0 %}+{% endif %}{{ "{:,}".format(diff) }}円)
+                    </small>
+                </h3>
+                <small class="text-muted">前月合計: ¥{{ "{:,}".format(last_month_total) }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow border-0 mb-3" style="border-left: 5px solid #17a2b8 !important;">
+            <div class="card-body text-center">
+                <h6 class="text-uppercase small font-weight-bold text-muted">粗利推計</h6>
+                <h3 class="mb-0 text-info">¥{{ "{:,}".format(summary.gross_profit) }}</h3>
+                <small class="text-muted">利益率: {{ summary.gross_margin_rate }}%</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 詳細コスト分析 -->
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <h6 class="m-0 font-weight-bold text-dark">コスト内訳 (推計)</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 border-md-end mb-3 mb-md-0">
+                <div class="p-2">
+                    <h6 class="text-muted small text-uppercase font-weight-bold">推定人件費</h6>
+                    <h4 class="text-dark">¥{{ "{:,}".format(summary.labor_cost) }}</h4>
+                    <p class="small text-muted mb-0">
+                        会計件数 ({{ sales|length }}件) × 2.5時間 × 1,500円/h<br>
+                        <span class="badge bg-light text-dark border mt-1">オペレーション推計</span>
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-2">
+                    <h6 class="text-muted small text-uppercase font-weight-bold">推定原価 (COGS)</h6>
+                    <h4 class="text-dark">¥{{ "{:,}".format(summary.cogs) }}</h4>
+                    <p class="small text-muted mb-0">
+                        売上額 × 35%<br>
+                        <span class="badge bg-light text-dark border mt-1">フードコスト率35%</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">売上履歴</h5>
+    <a href="/sales/export_csv" class="btn btn-sm btn-outline-success">CSVダウンロード</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="px-4">日時</th>
+                        <th class="text-end px-4">金額</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales %}
+                    <tr>
+                        <td class="px-4">{{ sale.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-end px-4 font-weight-bold">¥{{ "{:,}".format(sale.total_price) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

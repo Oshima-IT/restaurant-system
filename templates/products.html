@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h2>商品マスタ</h2>
+
+    <a href="/products/add" class="btn btn-primary">
+        ＋ 商品追加
+    </a>
+
+</div>
+
+<table class="table table-bordered table-hover">
+
+    <thead class="table-dark">
+
+        <tr>
+            <th>ID</th>
+            <th>商品名</th>
+            <th>カテゴリ</th>
+            <th>価格</th>
+            <th>在庫</th>
+            <th>操作</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+    {% for product in products %}
+
+        <tr>
+
+            <td>{{ product.id }}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.category }}</td>
+            <td>¥{{ product.price }}</td>
+            <td>{{ product.stock }}</td>
+
+            <td>
+
+                <a href="/products/edit/{{ product.id }}" class="btn btn-warning btn-sm">
+                編集
+                </a>
+
+                <a href="/products/delete/{{ product.id }}" class="btn btn-danger btn-sm"
+                onclick="return confirm('本当に削除しますか？');">
+                削除
+                </a>
+
+            </td>
+
+        </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

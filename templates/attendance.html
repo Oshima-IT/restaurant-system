@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>勤怠管理</h2>
+
+<hr>
+
+<div class="card" style="max-width:900px;">
+
+    <div class="card-body">
+
+        <div class="alert alert-info">
+            勤怠データは POS の最終画面やレシート読み取りから自動的に登録されます。CSV 取り込みは不要です。
+        </div>
+
+        <div class="mb-3">
+            <a href="/attendance/export_csv" class="btn btn-outline-secondary">勤怠CSVをダウンロード</a>
+        </div>
+
+        <hr>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5>今日の勤怠</h5>
+            {% if is_privileged %}
+            <a href="/employees" class="btn btn-outline-secondary btn-sm">社員管理</a>
+            {% endif %}
+        </div>
+
+        {% if attendance %}
+
+            <p>
+
+                出勤：
+
+                {% if attendance.clock_in %}
+
+                    {{ attendance.clock_in.strftime("%H:%M:%S") }}
+
+                {% else %}
+
+                    -
+
+                {% endif %}
+
+            </p>
+
+            <p>
+
+                退勤：
+
+                {% if attendance.clock_out %}
+
+                    {{ attendance.clock_out.strftime("%H:%M:%S") }}
+
+                {% else %}
+
+                    -
+
+                {% endif %}
+
+            </p>
+
+        {% else %}
+
+            <p class="text-muted">
+
+                本日の勤怠データはありません。
+
+            </p>
+
+        {% endif %}
+
+        <hr>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>勤怠履歴</h4>
+    <form class="d-flex gap-2 align-items-center" method="GET">
+        <select class="form-select form-select-sm" name="filter_type">
+            <option value="all" {% if filter_type == 'all' %}selected{% endif %}>全件</option>
+            <option value="today" {% if filter_type == 'today' %}selected{% endif %}>今日</option>
+            <option value="month" {% if filter_type == 'month' %}selected{% endif %}>今月</option>
+        </select>
+        <select class="form-select form-select-sm" name="user_id">
+            <option value="">全員</option>
+            {% for u in users %}
+            <option value="{{ u.id }}" {% if selected_user and selected_user|int == u.id %}selected{% endif %}>{{ u.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="date" class="form-control form-control-sm" name="start_date" value="{{ start_date or '' }}">
+        <input type="date" class="form-control form-control-sm" name="end_date" value="{{ end_date or '' }}">
+        <button class="btn btn-sm btn-primary">検索</button>
+    </form>
+</div>
+
+<table class="table table-striped">
+
+    <thead>
+
+        <tr>
+
+            <th>日付</th>
+            <th>社員名</th>
+            <th>出勤</th>
+            <th>退勤</th>
+            <th>勤務時間</th>
+            <th>操作</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        {% for attendance, user in attendance_list %}
+
+        <tr>
+
+            <td>{{ attendance.work_date }}</td>
+
+            <td>{{ user.name }}</td>
+
+            <td>
+
+                {% if attendance.clock_in %}
+                    {{ attendance.clock_in.strftime("%H:%M") }}
+                {% else %}
+                    -
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if attendance.clock_out %}
+                    {{ attendance.clock_out.strftime("%H:%M") }}
+                {% else %}
+                    -
+                {% endif %}
+
+            </td>
+
+            <td>
+                {{ format_work_duration(attendance.clock_in, attendance.clock_out) }}
+            </td>
+
+            <td>
+                {% if is_privileged %}
+                <a href="/attendance/edit/{{ attendance.id }}" class="btn btn-sm btn-outline-secondary">修正</a>
+                {% endif %}
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+    </div>
+
+</div>
+{% endblock %}

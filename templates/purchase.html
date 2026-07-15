@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>受発注管理</h2>
+
+<hr>
+
+<!-- 納品書撮影 / ファイル読み取り -->
+<div class="card mb-4">
+
+    <div class="card-header">
+        <h5>納品書読み取り</h5>
+    </div>
+
+    <div class="card-body text-center">
+
+        <!-- カメラ映像 -->
+        <video
+            id="video"
+            width="500"
+            height="350"
+            autoplay
+            class="border rounded">
+        </video>
+
+        <br><br>
+
+        <!-- カメラ起動 -->
+        <button
+            type="button"
+            class="btn btn-success me-2"
+            onclick="startCamera()">
+
+            <i class="bi bi-camera-video-fill"></i>
+            カメラ起動
+
+        </button>
+
+        <!-- 撮影 -->
+        <button
+            type="button"
+            class="btn btn-primary"
+            onclick="captureImage()">
+
+            <i class="bi bi-camera-fill"></i>
+            撮影
+
+        </button>
+
+        <canvas
+            id="canvas"
+            width="500"
+            height="350"
+            style="display:none;">
+        </canvas>
+
+        <hr>
+
+        <!-- ファイルアップロード -->
+        <h5>ファイルから読み取る</h5>
+
+        <input
+            type="file"
+            id="purchase_file"
+            accept="image/*"
+            class="form-control mb-2">
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="uploadPurchaseFile()">
+
+            <i class="bi bi-upload"></i>
+            ファイル読み取り
+
+        </button>
+
+        <hr>
+
+        <h5>画像プレビュー</h5>
+
+        <img
+            id="preview"
+            class="img-fluid border rounded"
+            style="max-width:500px;">
+
+        <hr>
+
+        <h5>OCR結果</h5>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>商品名</th>
+                    <th width="120">数量</th>
+                </tr>
+            </thead>
+
+            <tbody id="ocr-table">
+                <tr>
+                    <td colspan="2" class="text-center text-muted">
+                        OCR結果はありません
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button
+            id="register-btn"
+            class="btn btn-success"
+            style="display:none;">
+            一括登録
+        </button>
+
+    </div>
+
+</div>
+
+<!-- 発注登録 -->
+<div class="card mb-4">
+
+    <div class="card-header">
+        <h5>発注登録</h5>
+    </div>
+
+    <div class="card-body">
+
+        <form method="POST">
+
+            <div class="row g-2">
+
+                <div class="col-md-3">
+                    <input
+                        class="form-control"
+                        name="product_name"
+                        placeholder="商品名"
+                        required>
+                </div>
+
+                <div class="col-md-2">
+                    <input
+                        class="form-control"
+                        type="number"
+                        name="quantity"
+                        placeholder="数量"
+                        min="1"
+                        required>
+                </div>
+
+                <div class="col-md-2">
+                    <input
+                        class="form-control"
+                        type="text"
+                        name="supplier_name"
+                        placeholder="取引先企業名"
+                        required>
+                </div>
+
+                <div class="col-md-2">
+                    <input
+                        class="form-control"
+                        type="number"
+                        step="0.01"
+                        name="unit_price"
+                        placeholder="単価"
+                        required>
+                </div>
+
+                <div class="col-md-2">
+                    <input
+                        class="form-control"
+                        type="number"
+                        step="0.01"
+                        name="total_amount"
+                        placeholder="合計金額">
+                </div>
+
+                <div class="col-md-1">
+                    <button class="btn btn-primary w-100">
+                        登録
+                    </button>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- 発注履歴 -->
+<div class="card">
+
+    <div class="card-header">
+        <h5>発注履歴</h5>
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-striped">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>取引先</th>
+                    <th>単価</th>
+                    <th>合計金額</th>
+                    <th>状態</th>
+                    <th>登録日時</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for purchase in purchases %}
+                <tr>
+                    <td>{{ purchase.id }}</td>
+                    <td>{{ purchase.product_name }}</td>
+                    <td>{{ purchase.quantity }}</td>
+                    <td>{{ purchase.supplier_name }}</td>
+                    <td>{{ purchase.unit_price }}</td>
+                    <td>{{ purchase.total_amount }}</td>
+                    <td>{{ purchase.status }}</td>
+                    <td>{{ purchase.created_at.strftime("%Y/%m/%d %H:%M") }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+let stream;
+let ocrItems = [];
+
+// --------------------
+// カメラ起動
+// --------------------
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById("video").srcObject = stream;
+    } catch (error) {
+        alert("カメラを起動できません。");
+        console.error(error);
+    }
+}
+
+// --------------------
+// 撮影 → OCR
+// --------------------
+function captureImage() {
+
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const context = canvas.getContext("2d");
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const image = canvas.toDataURL("image/png");
+    document.getElementById("preview").src = image;
+
+    uploadImageToServer(image);
+}
+
+// --------------------
+// ファイルアップロード → OCR
+// --------------------
+function uploadPurchaseFile() {
+
+    const file = document.getElementById("purchase_file").files[0];
+    if (!file) {
+        alert("ファイルを選択してください");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    fetch("/upload_purchase_image", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert("画像アップロードに失敗しました");
+            return;
+        }
+
+        runOCR(data.filename);
+    });
+}
+
+// --------------------
+// Base64画像アップロード
+// --------------------
+function uploadImageToServer(image) {
+
+    fetch("/upload_purchase_image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert("画像保存に失敗しました");
+            return;
+        }
+
+        runOCR(data.filename);
+    });
+}
+
+// --------------------
+// OCR実行
+// --------------------
+function runOCR(filename) {
+
+    fetch("/ocr_purchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename })
+    })
+    .then(res => res.json())
+    .then(result => {
+
+        ocrItems = result.items;
+
+        const table = document.getElementById("ocr-table");
+        table.innerHTML = "";
+
+        result.items.forEach(item => {
+            table.innerHTML += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("register-btn").style.display = "inline-block";
+    });
+}
+
+// --------------------
+// 一括登録
+// --------------------
+document.getElementById("register-btn").addEventListener("click", function() {
+
+    fetch("/purchase/ocr_register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: ocrItems })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("登録しました");
+            location.reload();
+        }
+    });
+
+});
+
+</script>
+
+{% endblock %}

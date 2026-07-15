@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card" style="max-width:600px;">
+    <div class="card-body">
+        <h3>{% if user %}社員編集{% else %}社員追加{% endif %}</h3>
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">氏名</label>
+                <input type="text" class="form-control" name="name" value="{{ user.name if user else '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">ログインID</label>
+                <input type="text" class="form-control" name="username" value="{{ user.username if user else '' }}" {% if user %}disabled{% else %}required{% endif %}>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">パスワード</label>
+                <input type="password" class="form-control" name="password" {% if not user %}required{% endif %}>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">役職</label>
+                <select class="form-select" name="role">
+                    <option value="admin" {% if user and user.role == 'admin' %}selected{% endif %}>管理者</option>
+                    <option value="manager" {% if user and user.role == 'manager' %}selected{% endif %}>店長</option>
+                    <option value="staff" {% if user and user.role == 'staff' %}selected{% endif %}>アルバイト</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">時給</label>
+                <input type="number" class="form-control" name="hourly_wage" value="{{ user.hourly_wage if user else 1500 }}" min="0" required>
+            </div>
+            <button class="btn btn-primary">保存</button>
+            <a href="/employees" class="btn btn-secondary">戻る</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

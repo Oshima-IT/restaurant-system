@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>ダッシュボード</h2>
+<hr>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card shadow border-0 bg-gradient-primary text-primary" style="background: #f8f9fa; border-left: 5px solid #007bff !important;">
+            <div class="card-body">
+                <h6 class="text-uppercase mb-1" style="font-size: 0.8rem; font-weight: bold;">今日の売上</h6>
+                <h2 class="mb-0">¥{{ "{:,}".format(today_sales) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card shadow border-0" style="background: #f8f9fa; border-left: 5px solid #28a745 !important;">
+            <div class="card-body">
+                <h6 class="text-uppercase mb-1 text-success" style="font-size: 0.8rem; font-weight: bold;">今月の売上 (累計)</h6>
+                <h2 class="mb-0 text-success">¥{{ "{:,}".format(month_sales) }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">直近14日間の売上推移</h6>
+    </div>
+    <div class="card-body">
+        <div class="chart-area">
+            <canvas id="salesChart" style="height: 300px; width: 100%;"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body text-center">
+                <h6 class="text-muted">登録商品数</h6>
+                <h3 class="font-weight-bold">{{ product_count }}</h3>
+                <a href="/products" class="btn btn-sm btn-outline-primary mt-2">商品管理へ</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body text-center">
+                <h6 class="text-muted">売上分析</h6>
+                <p class="small text-muted">人件費・原価などの詳細な分析はこちら</p>
+                <a href="/sales" class="btn btn-sm btn-primary">売上画面で詳しく見る</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('salesChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ graph_labels|tojson }},
+        datasets: [{
+            label: '売上 (円)',
+            data: {{ graph_values|tojson }},
+            backgroundColor: 'rgba(0, 123, 255, 0.05)',
+            borderColor: 'rgba(0, 123, 255, 1)',
+            pointRadius: 3,
+            pointBackgroundColor: 'rgba(0, 123, 255, 1)',
+            pointBorderColor: 'rgba(0, 123, 255, 1)',
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: 'rgba(0, 123, 255, 1)',
+            pointHoverBorderColor: 'rgba(0, 123, 255, 1)',
+            pointHitRadius: 10,
+            pointBorderWidth: 2,
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    drawBorder: false,
+                    color: '#f0f0f0'
+                },
+                ticks: {
+                    callback: function(value) {
+                        return '¥' + value.toLocaleString();
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return '売上: ¥' + context.parsed.y.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+
+{% endblock %}
